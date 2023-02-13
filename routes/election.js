@@ -8,7 +8,7 @@ const router = express.Router();
 const Election = require("../models/Election");
 
 // * defining endpoints
-router.get("/", async (req, res) => {
+router.post("/admin/create-election", async (req, res) => {
   res.send("Hi");
 });
 

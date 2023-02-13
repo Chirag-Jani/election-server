@@ -15,6 +15,7 @@ const JWT_SECRET = "chiragJaniSecret01";
 
 // * importing schema to use
 const User = require("../models/User");
+const getUser = require("../middleware/getUser");
 
 // * to use router and create routes
 const router = express.Router();
@@ -40,7 +41,7 @@ router.post(
 
       // * authenticating
       if (!user) {
-        return res.status(400).json({ success, error: "Invalid Credentials" });
+        return res.status(400).json({ success, error: "User does not exist" });
       }
 
       // * comparing passwords to login
@@ -51,7 +52,9 @@ router.post(
 
       // * if passwords not match
       if (!passCompare) {
-        return res.status(400).json({ success, error: "Invalid Credentials" });
+        return res
+          .status(400)
+          .json({ success, error: "Password Doesn't Match" });
       } else {
         // * creating token and sending
         const data = {
@@ -77,7 +80,7 @@ router.post(
 
 // ! signup user
 router.post(
-  "/signup",
+  "/signup/user",
   [
     body("name", "Enter Name").exists(),
     body("email", "Enter email with min 5 characters").isEmail(),
@@ -142,8 +145,17 @@ router.post(
 );
 
 // ! update user
-router.put("/updateuser/:id", async (req, res) => {
+router.put("/update/user/:id", getUser, async (req, res) => {
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success,
+        error: errors.array(),
+      });
+    }
+
     let success = false;
 
     // * getting values by destructering
@@ -155,7 +167,14 @@ router.put("/updateuser/:id", async (req, res) => {
     // * setting fields if entered
     if (name) updatedUser.name = name;
     if (email) updatedUser.email = email;
-    if (password) updatedUser.password = password;
+    if (password) {
+      // * generating salt
+      const salt = await bcrypt.genSalt(10);
+
+      // * encrypting password
+      let securePass = await bcrypt.hash(password, salt);
+      updatedUser.password = securePass;
+    }
     if (dob) updatedUser.dob = dob;
 
     // * finding user by id
@@ -184,7 +203,7 @@ router.put("/updateuser/:id", async (req, res) => {
 });
 
 // ! delete user
-router.delete("/deleteuser/:id", async (req, res) => {
+router.delete("/delete/user/:id", getUser, async (req, res) => {
   try {
     let success = false;
 
