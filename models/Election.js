@@ -7,6 +7,7 @@ const electionSchema = Schema({
   status: {
     type: String,
     required: true,
+    default: "Created",
   },
   agenda: {
     type: String,
@@ -38,10 +39,20 @@ const electionSchema = Schema({
       },
     },
   ],
+  voters: [
+    {
+      email: {
+        type: String,
+        required: true,
+        unique: true,
+      },
+    },
+  ],
   winner: {
     name: {
       type: String,
       required: true,
+      default: "N/A",
     },
   },
 });

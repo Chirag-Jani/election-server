@@ -27,6 +27,7 @@ app.listen(port, () => {
 // * routes
 app.use("/user", require("./routes/election"));
 app.use("/auth", require("./routes/auth"));
+app.use("/vote", require("./routes/vote"));
 
 // * connecting the database
 connectToMongoDB();
