@@ -31,7 +31,6 @@ const electionSchema = Schema({
       email: {
         type: String,
         required: true,
-        unique: true,
       },
       votesReceived: {
         type: Number,
@@ -44,7 +43,6 @@ const electionSchema = Schema({
       email: {
         type: String,
         required: true,
-        unique: true,
       },
     },
   ],

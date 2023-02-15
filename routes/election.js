@@ -35,7 +35,7 @@ router.post("/admin/create-election", async (req, res) => {
     });
 
     success = true;
-    return res.json({ success, election });
+    return res.json({ success, message: "Election Created Successfully" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -47,6 +47,19 @@ router.put("/admin/createelection/:id", async (req, res) => {
     let success = false;
 
     const { candidate } = req.body;
+
+    // * find candidate here to prevent same email id of different candidates
+    let candidateExist = await Election.findOne({
+      _id: req.params.id,
+      "candidates.email": candidate.email,
+    });
+
+    if (candidateExist) {
+      return res.json({
+        success,
+        error: "Candidate with the same email exists.",
+      });
+    }
 
     let election = await Election.findById(req.params.id);
     let newElection = election;
@@ -63,7 +76,7 @@ router.put("/admin/createelection/:id", async (req, res) => {
     );
 
     success = true;
-    return res.json({ success, election });
+    return res.json({ success, message: "Candidate Added Successfully" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -88,7 +101,7 @@ router.put("/admin/updateelection/:id", async (req, res) => {
     );
 
     success = true;
-    return res.json({ success, election });
+    return res.json({ success, message: "Election Updated Successfully" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -102,7 +115,7 @@ router.delete("/admin/deleteelection/:id", async (req, res) => {
     let election = await Election.findByIdAndDelete(req.params.id);
 
     success = true;
-    return res.json({ success });
+    return res.json({ success, message: "Election Deleted Successfully" });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
