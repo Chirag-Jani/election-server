@@ -82,6 +82,26 @@ router.put("/admin/createelection/:id", async (req, res) => {
   }
 });
 
+// ! remove candidate
+router.put(
+  "/admin/removecandidate/:electionId/:candidateId",
+  async (req, res) => {
+    try {
+      let success = false;
+
+      let election = await Election.updateOne(
+        { _id: req.params.electionId },
+        { $pull: { candidates: { _id: req.params.candidateId } } }
+      );
+
+      success = true;
+      return res.json({ success, message: "Candidate Removed Successfully" });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+);
+
 // ! update election info
 router.put("/admin/updateelection/:id", async (req, res) => {
   try {
