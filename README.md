@@ -7,11 +7,19 @@ Tasks:
 
 - validation remaining
 - middlewares remaining for election endpoints
+- winner declaration (shold be done automatically)
+- status update of election
+- can add start and end date/time (optional)
+
+---
 
 Bugs/Remaining Updates:
 
 - change election status (think over it some more)
+- don't let update election info or anything (adding/removing candidates) once started the election
 - only let them vote if they have signed up and logged in (auth token will do the work probably)
+
+---
 
 Done till date (15th Feb. '23):
 User:
