@@ -127,6 +127,48 @@ router.put("/admin/updateelection/:id", async (req, res) => {
   }
 });
 
+// ! start/end election
+router.put("/admin/changestatus/:electionId", async (req, res) => {
+  try {
+    let success = false;
+
+    let election = await Election.updateOne(
+      { _id: req.params.electionId },
+      {
+        status: req.body.status,
+      }
+    );
+
+    if (req.body.status == "Ended") {
+      // get winner
+      success = true;
+      return res.json({ success, winner: "jani" });
+    }
+
+    // let election = await Election.updateOne(
+    //   { _id: req.params.electionId },
+    //   {
+    //     $set: {
+    //       status: {
+    //         $switch: {
+    //           branches: [
+    //             { case: { $eq: ["$status", "Created"] }, then: "Started" },
+    //             { case: { $eq: ["$status", "Started"] }, then: "Ended" },
+    //           ],
+    //           default: "N/A",
+    //         },
+    //       },
+    //     },
+    //   }
+    // );
+
+    success = true;
+    return res.json({ success, message: `Election ${req.body.status}` });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // ! delete election
 router.delete("/admin/deleteelection/:id", async (req, res) => {
   try {
