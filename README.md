@@ -1,21 +1,27 @@
 Tasks:
 
+- winner declaration (shold be done automatically if state == ended)
+
 - auth token will be needed in the header
 
   - while creating eleciton (token of admin)
   - while voting (token of user)
 
 - validation remaining
+
+  - while updating user
+  - creating & updating election
+  - candidate email while adding one
+
 - middlewares remaining for election endpoints
-- winner declaration (shold be done automatically)
-- can add start and end date/time (optional)
+  - should not be able to update or vote based on the state of the election
 
 ---
 
 Bugs/Remaining Updates:
 
-- change election status (think over it some more as it is unconditional at the moment - make it conditional)
-- don't let update election info or anything (adding/removing candidates) once started the election
+- change election status (it is unconditional at the moment - make it conditional)
+
 - only let them vote if they have signed up and logged in (auth token will do the work probably)
 
 ---
@@ -35,3 +41,6 @@ Elections:
 - add & remove candidates
 - vote any candidate in any election (only once per user email)
 - get the list of all the elections
+- update election state (manually as of now by using req.body)
+- don't let update election info or anything (adding/removing candidates) once started the election
+  - implemented by just matching the status manually as of now (want to use middleware if possible)

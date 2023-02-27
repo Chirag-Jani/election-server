@@ -1,5 +1,6 @@
 // * importing express
 const express = require("express");
+const getElectionState = require("../middleware/getElectionState");
 
 // * to use router and define routes
 const router = express.Router();
@@ -42,11 +43,15 @@ router.post("/admin/create-election", async (req, res) => {
 });
 
 // ! add candidate
-router.put("/admin/createelection/:id", async (req, res) => {
+router.put("/admin/add-candidate/:id", async (req, res) => {
   try {
     let success = false;
-
     const { candidate } = req.body;
+    let election = await Election.findById(req.params.id);
+
+    if (election.status !== "Created") {
+      return res.json({ success, error: "Invalid state of election" });
+    }
 
     // * find candidate here to prevent same email id of different candidates
     let candidateExist = await Election.findOne({
@@ -61,7 +66,6 @@ router.put("/admin/createelection/:id", async (req, res) => {
       });
     }
 
-    let election = await Election.findById(req.params.id);
     let newElection = election;
     if (candidate) newElection.candidates.push(candidate);
 
@@ -83,8 +87,8 @@ router.put("/admin/createelection/:id", async (req, res) => {
 });
 
 // ! remove candidate
-router.put(
-  "/admin/removecandidate/:electionId/:candidateId",
+router.delete(
+  "/admin/remove-candidate/:electionId/:candidateId",
   async (req, res) => {
     try {
       let success = false;
@@ -103,10 +107,15 @@ router.put(
 );
 
 // ! update election info
-router.put("/admin/updateelection/:id", async (req, res) => {
+router.put("/admin/update-election/:id", async (req, res) => {
   try {
     let success = false;
     let election = await Election.findById(req.params.id);
+
+    if (!election) {
+      return res.json({ success, error: "Election doesn't exists" });
+    }
+
     const { agenda, info, candidates } = req.body;
 
     let newElection = {};
@@ -128,7 +137,7 @@ router.put("/admin/updateelection/:id", async (req, res) => {
 });
 
 // ! start/end election
-router.put("/admin/changestatus/:electionId", async (req, res) => {
+router.put("/admin/change-status/:electionId", async (req, res) => {
   try {
     let success = false;
 
@@ -140,27 +149,42 @@ router.put("/admin/changestatus/:electionId", async (req, res) => {
     );
 
     if (req.body.status == "Ended") {
-      // get winner
+      // finding winner
+      let candidates = await Election.find(
+        {
+          _id: req.params.electionId,
+        },
+        {
+          candidates: 1,
+        }
+      );
+
       success = true;
-      return res.json({ success, winner: "jani" });
+      return res.json({ success, candidates });
     }
 
-    // let election = await Election.updateOne(
-    //   { _id: req.params.electionId },
+    // let election = await Election.updateOne({ _id: req.params.electionId }, [
     //   {
     //     $set: {
     //       status: {
-    //         $switch: {
-    //           branches: [
-    //             { case: { $eq: ["$status", "Created"] }, then: "Started" },
-    //             { case: { $eq: ["$status", "Started"] }, then: "Ended" },
-    //           ],
-    //           default: "N/A",
-    //         },
+    //         $eq: ["$status", "Created"],
     //       },
+    //       status: "Started",
     //     },
-    //   }
-    // );
+    //     $set: {
+    //       status: {
+    //         $eq: ["$status", "Started"],
+    //       },
+    //       status: "Ended",
+    //     },
+    //     $set: {
+    //       status: {
+    //         $eq: ["$status", "Ended"],
+    //       },
+    //       status: "Created",
+    //     },
+    //   },
+    // ]);
 
     success = true;
     return res.json({ success, message: `Election ${req.body.status}` });
@@ -170,7 +194,7 @@ router.put("/admin/changestatus/:electionId", async (req, res) => {
 });
 
 // ! delete election
-router.delete("/admin/deleteelection/:id", async (req, res) => {
+router.delete("/admin/delete-election/:id", async (req, res) => {
   try {
     let success = false;
 

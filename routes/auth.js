@@ -202,7 +202,7 @@ router.put("/update/user/:id", getUser, async (req, res) => {
   }
 });
 
-// ! delete user
+// ! delete user - only admin should
 router.delete("/delete/user/:id", getUser, async (req, res) => {
   try {
     let success = false;
