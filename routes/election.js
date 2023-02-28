@@ -1,6 +1,10 @@
 // * importing express
 const express = require("express");
+const { body, validationResult } = require("express-validator");
 const getElectionState = require("../middleware/getElectionState");
+
+// * objectId
+const { ObjectId } = require("mongodb");
 
 // * to use router and define routes
 const router = express.Router();
@@ -27,16 +31,19 @@ router.post("/admin/create-election", async (req, res) => {
   try {
     let success = false;
 
-    const { agenda, info, candidates } = req.body;
+    const { agenda, info } = req.body;
 
     let election = await Election.create({
       agenda,
       info,
-      candidates,
     });
 
     success = true;
-    return res.json({ success, message: "Election Created Successfully" });
+    return res.json({
+      success,
+      message: "Election Created Successfully",
+      election,
+    });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -46,6 +53,7 @@ router.post("/admin/create-election", async (req, res) => {
 router.put("/admin/add-candidate/:id", async (req, res) => {
   try {
     let success = false;
+
     const { candidate } = req.body;
     let election = await Election.findById(req.params.id);
 
@@ -80,7 +88,11 @@ router.put("/admin/add-candidate/:id", async (req, res) => {
     );
 
     success = true;
-    return res.json({ success, message: "Candidate Added Successfully" });
+    return res.json({
+      success,
+      message: "Candidate Added Successfully",
+      candidate,
+    });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -116,12 +128,11 @@ router.put("/admin/update-election/:id", async (req, res) => {
       return res.json({ success, error: "Election doesn't exists" });
     }
 
-    const { agenda, info, candidates } = req.body;
+    const { agenda, info } = req.body;
 
     let newElection = {};
     if (agenda) newElection.agenda = agenda;
     if (info) newElection.info = info;
-    if (candidates) newElection.candidates = candidates;
 
     election = await Election.findOneAndUpdate(
       req.params.id,
@@ -141,53 +152,56 @@ router.put("/admin/change-status/:electionId", async (req, res) => {
   try {
     let success = false;
 
-    let election = await Election.updateOne(
-      { _id: req.params.electionId },
+    let election = await Election.updateOne([
       {
-        status: req.body.status,
-      }
-    );
-
-    if (req.body.status == "Ended") {
-      // finding winner
-      let candidates = await Election.find(
-        {
-          _id: req.params.electionId,
+        $set: {
+          status: {
+            $cond: {
+              if: { $eq: ["$status", "Created"] },
+              then: "Started",
+              else: {
+                $cond: {
+                  if: { $eq: ["$status", "Started"] },
+                  then: "Ended",
+                  else: "Created",
+                },
+              },
+            },
+          },
         },
+      },
+    ]);
+
+    if (req.body.winner) {
+      let winnerCandidate = await Election.aggregate([
+        { $match: { _id: ObjectId(req.params.electionId) } },
+        { $unwind: "$candidates" },
+        { $sort: { "candidates.votesReceived": -1 } },
+        { $limit: 1 },
         {
-          candidates: 1,
-        }
+          $project: {
+            _id: "$candidates._id",
+            name: "$candidates.name",
+            email: "$candidates.email",
+            votesReceived: "$candidates.votesReceived",
+          },
+        },
+      ]);
+
+      await Election.updateOne(
+        {
+          _id: ObjectId(req.params.electionId),
+          status: "Ended",
+        },
+        { $set: { winner: winnerCandidate } }
       );
 
       success = true;
-      return res.json({ success, candidates });
+      return res.json({ success, election });
     }
 
-    // let election = await Election.updateOne({ _id: req.params.electionId }, [
-    //   {
-    //     $set: {
-    //       status: {
-    //         $eq: ["$status", "Created"],
-    //       },
-    //       status: "Started",
-    //     },
-    //     $set: {
-    //       status: {
-    //         $eq: ["$status", "Started"],
-    //       },
-    //       status: "Ended",
-    //     },
-    //     $set: {
-    //       status: {
-    //         $eq: ["$status", "Ended"],
-    //       },
-    //       status: "Created",
-    //     },
-    //   },
-    // ]);
-
     success = true;
-    return res.json({ success, message: `Election ${req.body.status}` });
+    return res.json({ success, message: `Election State updated` });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
