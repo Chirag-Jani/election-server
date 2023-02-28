@@ -1,46 +1,41 @@
-Tasks:
+# Available Endpoints:
 
-- winner declaration (shold be done automatically if state == ended)
+## User CRUD:
 
-- auth token will be needed in the header
+- login:
+  localhost:5000/auth/login/user
 
-  - while creating eleciton (token of admin)
-  - while voting (token of user)
+- signup:
+  localhost:5000/auth/signup/user
 
-- validation remaining
+- update user:
+  localhost:5000/auth/update/user/<user_id>
 
-  - while updating user
-  - creating & updating election
-  - candidate email while adding one
+- delete user:
+  localhost:5000/auth/delete/user/<user_id>
 
-- middlewares remaining for election endpoints
-  - should not be able to update or vote based on the state of the election
+## Election CRUD:
 
----
+- get election:
+  localhost:5000/user/getelections
 
-Bugs/Remaining Updates:
+- create election:
+  localhost:5000/user/admin/create-election
 
-- change election status (it is unconditional at the moment - make it conditional)
+- update election:
+  localhost:5000/user/admin/update-election/<election_id>
 
-- only let them vote if they have signed up and logged in (auth token will do the work probably)
+- delete election:
+  localhost:5000/user/admin/delete-election/<election_id>
 
----
+- add candidate:
+  localhost:5000/user/admin/add-candidate/<election_id>
 
-Done till date (15th Feb. '23):
-User:
+- remove candidate:
+  localhost:5000/user/admin/remove-candidate/<election_id>/<candidate_id>
 
-- register user
-- login user
-- update user
-- remove user
-- JWT added in all, need to include JWT in election APIs but it will be in later parts
+- change election status:
+  localhost:5000/user/admin/change-status/<election_id>
 
-Elections:
-
-- create elections and delete elections
-- add & remove candidates
-- vote any candidate in any election (only once per user email)
-- get the list of all the elections
-- update election state (manually as of now by using req.body)
-- don't let update election info or anything (adding/removing candidates) once started the election
-  - implemented by just matching the status manually as of now (want to use middleware if possible)
+- vote candidate:
+  localhost:5000/vote/<election_id>/<candidate_id>

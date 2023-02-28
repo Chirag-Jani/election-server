@@ -30,6 +30,8 @@ router.post(
   async (req, res) => {
     try {
       let success = false;
+
+      // * checking for errors
       const errors = validationResult(req);
 
       if (!errors.isEmpty()) {
@@ -90,6 +92,8 @@ router.post(
   async (req, res) => {
     try {
       let success = false;
+
+      // * checking for errors
       const errors = validationResult(req);
 
       if (!errors.isEmpty()) {
@@ -147,16 +151,16 @@ router.post(
 // ! update user
 router.put("/update/user/:id", getUser, async (req, res) => {
   try {
-    const errors = validationResult(req);
+    let success = false;
 
+    // * checking for errors
+    const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success,
         error: errors.array(),
       });
     }
-
-    let success = false;
 
     // * getting values by destructering
     let { name, email, password, dob } = req.body;

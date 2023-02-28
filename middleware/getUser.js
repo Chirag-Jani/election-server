@@ -1,3 +1,5 @@
+// * this middleware will check for auth-token only in the headers
+
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = "chiragJaniSecret01";
 
@@ -20,7 +22,7 @@ const getUser = async (req, res, next) => {
     // * calling next function which will be the callback in any request
     next();
   } catch (error) {
-    req.status(401).json({ error: "Access Denied" });
+    res.status(401).json({ error: "Access Denied" });
   }
 };
 
