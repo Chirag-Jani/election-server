@@ -14,7 +14,7 @@ const router = express.Router();
 const Election = require("../models/Election");
 
 // ! get elections
-router.get("/getelections", getUser, async (req, res) => {
+router.get("/get-elections", getUser, async (req, res) => {
   try {
     let success = false;
 
